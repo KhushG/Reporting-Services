@@ -1,8 +1,8 @@
 # Reporting Services Custom Security Sample
-This project contains a sample and the steps that allow you to deploy a custom security extension to SQL Reporting Services 2016.
+This project contains a sample and the steps that allow you to deploy a custom security extension to SQL Reporting Services 2016 or Power BI Report Server.
 
 # Synopsis
-# Custom Authentication in SSRS2016
+# Custom Authentication in SSRS2016 and Power BI Report Server
 
 SSRS 2016 introduced a new portal to host new OData APIs and host new report workloads such as mobile reports and KPIS. This new portal relies in newer technologies and is isolated from the familiar ReportingServicesService by running in a separate process. This process is not an ASP.NET hosted application and as such breaks assumptions from existing custom security extensions. Moreover, the current interfaces for custom security extensions don't allow for any external context to be passed-in, leaving implementers with the only choice to inspect well-known global ASP.NET Objects, this required some changes to the interface.
 
@@ -73,6 +73,17 @@ The basic configurations needed for custom security extension are the same as pr
 To deploy the sample
 -	Copy Microsoft.Samples.ReportingServices.CustomSecurity.dll and Microsoft.Samples.ReportingServices.CustomSecurity.pdb to the <install>\ReportServer\bin directory. 
 -	Copy Microsoft.Samples.ReportingServices.CustomSecurity.dll and Microsoft.Samples.ReportingServices.CustomSecurity.pdb to the <install>\RSWebApp\bin directory. If a PDB file is not present, it was not created by the Build step provided above. Ensure that the Project Properties for Debug/Build is set to generate PDB files. 
+-	Copy over Microsoft.Samples.ReportingServices.CustomSecurity.dll.config.
+-	Update the Microsoft.Samples.ReportingServices.CustomSecurity.dll.config with the following:- 
+		Search for “Microsoft_Samples_ReportingServices_CustomSecurity_localhost_ReportingService2010” and update the value to your Web Service URL: 
+		```xml
+			<value>http://servername/ReportServer/ReportService2010.asmx</value> 
+		```	
+		Search for “Database_ConnectionString” 
+		Update the value to the location of the UserAccounts Database as:-
+		```xml
+			<value>Server=servername; Integrated Security=SSPI;database=UserAccounts</value> 
+		```	
 -	Copy the Logon.aspx page to the <install>\ReportServer directory. 
 	
 Modify files in the ReportServer Folder
@@ -108,19 +119,6 @@ Modify files in the ReportServer Folder
 	<Authentication>
 		<Extension Name="Forms" Type="Microsoft.Samples.ReportingServices.CustomSecurity.AuthenticationExtension,Microsoft.Samples.ReportingServices.CustomSecurity" />
 	</Authentication> 
-	```
-
--	Locate the <UI> element and update it as follows: 
-	
-	```xml
-	<UI>
-		<CustomAuthenticationUI>
-			<loginUrl>/Pages/UILogon.aspx</loginUrl>
-			<UseSSL>True</UseSSL>
-		</CustomAuthenticationUI>
-		<ReportServerUrl>http://<server>/ReportServer</ReportServerUrl>
-		<PageCountMode>Estimate</PageCountMode>
-	</UI>
 	```
 	
 Note: 
@@ -174,6 +172,8 @@ This will deny unauthenticated users the right to access the report server. The 
 Adding Machine Keys
 
 -	For the case of Forms authentication which requires the decryption of the Authentication cookie, both processes need to be configured with the same machine key and decryption algorithm. This was a step familiar to those who had previously setup SSRS to work on scale-out environments, but now is a requirement even for deployments on a single machine.
+
+## Reporting Services 2016
 -	For example:In <RSPATH>\ReportServer\web.config,add under "system.web"
 
 	```xml
@@ -186,6 +186,37 @@ Adding Machine Keys
 		<machineKey validationKey=="[YOUR KEY]" decryptionKey=="[YOUR KEY]" validation="AES" decryption="AES" />
 	</system.web>
 	```
+
+-	Then <RSPATH>\RSPowerB\Microsoft.ReportingServices.Portal.WebHost.exe.config, add under "configuration"
+
+ 	```xml
+	 <system.web>
+		<machineKey validationKey=="[YOUR KEY]" decryptionKey=="[YOUR KEY]" validation="AES" decryption="AES" />
+	</system.web>
+	```
+
+## Power BI Report Server
+-	For example:In <RSPATH>\ReportServer\web.config,add under "system.web"
+
+	```xml
+		<machineKey validationKey="[YOUR KEY]" decryptionKey=="[YOUR KEY]" validation="AES" decryption="AES" />
+	```
+-	Then <RSPATH>\RSPortal\RSPortal.exe.config, add under "configuration"
+
+ 	```xml
+	 <system.web>
+		<machineKey validationKey=="[YOUR KEY]" decryptionKey=="[YOUR KEY]" validation="AES" decryption="AES" />
+	</system.web>
+	```
+
+-	Then <RSPATH>\RSPowerB\RSPowerBI.exe.config, add under "configuration"
+
+ 	```xml
+	 <system.web>
+		<machineKey validationKey=="[YOUR KEY]" decryptionKey=="[YOUR KEY]" validation="AES" decryption="AES" />
+	</system.web>
+	```
+
 Note: You should use a validation key specific for you deployment, there are several tools to generate the keys like Internet Information Services Manager(IIS) another example is: 
 http://www.a2zmenu.com/utility/machine-key-generator.aspx 
  
@@ -193,7 +224,7 @@ http://www.a2zmenu.com/utility/machine-key-generator.aspx
 ## Step 5: Configure Passthrough cookies
 
 The new portal and the reportserver communicate using internal soap APIs for some of its operations. When additional cookies are required to be passed from the portal to the server the PassThroughCookies properties is still available. More Details: https://msdn.microsoft.com/en-us/library/ms345241.aspx 
-In the rsreportserver.config file add following under <UI> :-
+In the rsreportserver.config file add following under <UI>
 
 ```xml
 <UI>
@@ -213,4 +244,5 @@ For more information see the [Code of Conduct
 FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com)
 with any additional questions or comments.
+
 
