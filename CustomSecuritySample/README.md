@@ -75,12 +75,14 @@ To deploy the sample
 -	Copy Microsoft.Samples.ReportingServices.CustomSecurity.dll and Microsoft.Samples.ReportingServices.CustomSecurity.pdb to the <install>\RSWebApp\bin directory. If a PDB file is not present, it was not created by the Build step provided above. Ensure that the Project Properties for Debug/Build is set to generate PDB files. 
 -	Copy over Microsoft.Samples.ReportingServices.CustomSecurity.dll.config.
 -	Update the Microsoft.Samples.ReportingServices.CustomSecurity.dll.config with the following:- 
-		Search for “Microsoft_Samples_ReportingServices_CustomSecurity_localhost_ReportingService2010” and update the value to your Web Service URL: 
+-	Search for “Microsoft_Samples_ReportingServices_CustomSecurity_localhost_ReportingService2010” and update the value to your Web Service URL: 
+		
 		```xml
 			<value>http://servername/ReportServer/ReportService2010.asmx</value> 
-		```	
-		Search for “Database_ConnectionString” 
-		Update the value to the location of the UserAccounts Database as:-
+		```
+		
+-	Search for “Database_ConnectionString” and update the value to the location of the UserAccounts Database as:-
+		
 		```xml
 			<value>Server=servername; Integrated Security=SSPI;database=UserAccounts</value> 
 		```	
